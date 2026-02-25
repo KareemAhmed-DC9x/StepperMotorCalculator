@@ -9,7 +9,7 @@ Welcome to the **Stepper Motor Calculator**! This is a desktop application desig
 ## Features
 
 - **User-Friendly Interface**: Easy-to-use graphical interface built with Tkinter.
-- **Input Fields**: Provides input fields for step angle, microstep setting, pitch, and maximum RPM.
+- **Input Fields**: Provides input fields for step angle, microstep setting, lead, and maximum RPM.
 - **Instant Calculation**: Calculates and displays results instantly upon button click.
 - **Custom Error Handling**: Displays custom error messages for invalid inputs.
 
@@ -37,7 +37,7 @@ Welcome to the **Stepper Motor Calculator**! This is a desktop application desig
 2. **Input the required parameters**:
     - **Step angle (degrees)**: The step angle of your stepper motor.
     - **Microstep setting**: The microstepping setting of your stepper driver.
-    - **Pitch (mm)**: The pitch of the lead screw or belt.
+    - **Lead (mm/rev)**: The linear distance traveled per full revolution (for a lead screw, Lead = Pitch × Number of starts).
     - **Maximum RPM**: The maximum revolutions per minute of your motor.
 
 3. **Click "Calculate"** to view the results.
@@ -47,7 +47,7 @@ Welcome to the **Stepper Motor Calculator**! This is a desktop application desig
 ### Input
 - **Step angle**: 1.8
 - **Microstep setting**: 16
-- **Pitch**: 2
+- **Lead (mm/rev)**: 8
 - **Maximum RPM**: 1000
 
 ### Output
@@ -75,10 +75,10 @@ class StepperMotorCalculator(tk.Tk):
 ### Widget Creation
 ```python
 def create_widgets(self):
-    self.create_label_entry("Step angle (degrees):", "step_angle")
-    self.create_label_entry("Microstep setting:", "microstep_setting")
-    self.create_label_entry("Pitch (mm):", "pitch")
-    self.create_label_entry("Maximum RPM:", "max_rpm")
+    self.create_label_entry("Step angle (degrees):", "step_angle", 0)
+    self.create_label_entry("Microstep setting:", "microstep_setting", 1)
+    self.create_label_entry("Lead (mm/rev):", "lead", 2)
+    self.create_label_entry("Maximum RPM:", "max_rpm", 3)
 
     calc_button = ttk.Button(self, text="Calculate", command=self.calculate)
     calc_button.grid(row=4, column=0, columnspan=2, pady=10)
@@ -95,8 +95,8 @@ def create_widgets(self):
 def calculate(self):
     try:
         step_angle = float(self.step_angle_entry.get())
-        microstep_setting = int(self.microstep_setting_entry.get())
-        lead = float(self.pitch_entry.get()) * 4
+        microstep_setting = int(float(self.microstep_setting_entry.get()))
+        lead = float(self.lead_entry.get())
         max_rpm = float(self.max_rpm_entry.get())
 
         full_steps_per_revolution = 360 / step_angle
@@ -122,13 +122,17 @@ def calculate(self):
 def show_custom_error(self, title, message):
     error_dialog = Toplevel(self)
     error_dialog.title(title)
-    error_dialog.geometry("500x100")
+    error_dialog.geometry("500x150")
     error_dialog.resizable(False, False)
 
-    custom_icon = tk.PhotoImage(file="error.png")
-    icon_label = Label(error_dialog, image=custom_icon)
-    icon_label.image = custom_icon
-    icon_label.pack(side="left", padx=10, pady=10)
+    if os.path.exists("error.png"):
+        try:
+            custom_icon = tk.PhotoImage(file="error.png")
+            icon_label = Label(error_dialog, image=custom_icon)
+            icon_label.image = custom_icon
+            icon_label.pack(side="left", padx=10, pady=10)
+        except tk.TclError:
+            pass
 
     message_label = Label(error_dialog, text=message)
     message_label.pack(side="left", padx=10, pady=10)
